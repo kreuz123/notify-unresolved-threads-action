@@ -28,11 +28,3 @@ jobs:
       - uses: kreuz123/notify-unresolved-threads-action@v1
         with:
           token: ${{ github.token }}
-
-With Custom Wait Time
-
-- uses: kreuz123/notify-unresolved-threads-action@v1
-  with:
-    token: ${{ github.token }}
-    wait-seconds: '30'
-
