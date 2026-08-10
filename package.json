@@ -1,0 +1,32 @@
+{
+  "name": "notify-unresolved-threads-action",
+  "version": "1.0.0",
+  "description": "GitHub Action to notify reviewers of unresolved threads after approval",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "build": "ncc build index.js --license licenses.txt",
+    "prepare": "npm run build",
+    "format": "prettier --write '**/*.{js,json,md,yml}'",
+    "lint": "eslint index.js src/"
+  },
+  "keywords": [
+    "github-action",
+    "pull-request",
+    "review",
+    "threads"
+  ],
+  "author": "kreuz123",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.1.0"
+  }
+}
