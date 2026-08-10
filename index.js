@@ -1,0 +1,75 @@
+const core = require('@actions/core');
+const github = require('@actions/github');
+const { checkUnresolvedThreads } = require('./src/check-threads');
+const { formatThreadList } = require('./src/format-threads');
+
+async function run() {
+  try {
+    // Get inputs
+    const token = core.getInput('token');
+    const waitSeconds = parseInt(core.getInput('wait-seconds'), 10);
+    
+    // Wait as configured
+    if (waitSeconds > 0) {
+      core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
+      await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+    }
+
+    // Get context
+    const context = github.context;
+    const client = github.getOctokit(token);
+
+    // Check if this is an approved review
+    if (context.payload.review?.state !== 'approved') {
+      core.info('Review is not approved. Skipping thread check.');
+      return;
+    }
+
+    const reviewer = context.payload.review.user.login;
+    const { owner, repo } = context.repo;
+    const prNumber = context.payload.pull_request.number;
+
+    core.info(`Checking unresolved threads for reviewer: ${reviewer}`);
+
+    // Fetch and check threads
+    const unresolvedThreads = await checkUnresolvedThreads(
+      client,
+      owner,
+      repo,
+      prNumber,
+      reviewer
+    );
+
+    if (unresolvedThreads.length === 0) {
+      core.info('No unresolved threads found.');
+      core.setOutput('reviewer', reviewer);
+      core.setOutput('unresolvedCount', '0');
+      core.setOutput('threadList', '');
+      return;
+    }
+
+    // Format output
+    const threadList = formatThreadList(unresolvedThreads);
+
+    // Set outputs
+    core.setOutput('reviewer', reviewer);
+    core.setOutput('unresolvedCount', unresolvedThreads.length.toString());
+    core.setOutput('threadList', threadList);
+
+    // Post comment
+    const commentBody = `@${reviewer} You have approved this PR, but you also started ${unresolvedThreads.length} unresolved review thread(s). Please resolve your own conversations. Thank you!\n\n**Your unresolved review threads:**\n${threadList}`;
+
+    await client.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: prNumber,
+      body: commentBody
+    });
+
+    core.info(`Comment posted successfully. Notified ${reviewer} of ${unresolvedThreads.length} unresolved thread(s).`);
+  } catch (error) {
+    core.setFailed(`Action failed: ${error.message}`);
+  }
+}
+
+run();
