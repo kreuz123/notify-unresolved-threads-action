@@ -1,0 +1,28 @@
+name: 'Notify Approver of Unresolved Threads'
+description: 'Notifies PR reviewers who approved with unresolved review threads'
+author: 'kreuz123'
+branding:
+  icon: 'alert-circle'
+  color: 'blue'
+
+inputs:
+  token:
+    description: 'GitHub token for API access'
+    required: false
+    default: ${{ github.token }}
+  wait-seconds:
+    description: 'Seconds to wait before checking threads'
+    required: false
+    default: '45'
+
+outputs:
+  reviewer:
+    description: 'Username of the reviewer who approved'
+  unresolvedCount:
+    description: 'Number of unresolved threads by reviewer'
+  threadList:
+    description: 'Formatted list of unresolved threads'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
