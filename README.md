@@ -24,6 +24,9 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
     steps:
       - uses: kreuz123/notify-unresolved-threads-action@v1
         with:
