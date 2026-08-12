@@ -65,11 +65,9 @@ The template supports the following placeholders:
 
 | Name          | Required | Default            | Description                              |
 | ------------- | -------- | ------------------- | ---------------------------------------- |
-| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. Defaults to the automatically provided token. |
+| `token`       | No       | `${{ github.token }}` | Token used to read threads and post the comment. Override only for a PAT or GitHub App token. |
 | `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
 | `comment-template` | No | See `action.yml` | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
-
-Only override `token` if you need to use a Personal Access Token (PAT) or a GitHub App token — for example, to trigger other workflows or to access resources beyond the default `GITHUB_TOKEN` permissions. In most cases you don't need to set it explicitly.
 
 ## Outputs
 
@@ -84,6 +82,3 @@ Only override `token` if you need to use a Personal Access Token (PAT) or a GitH
 The workflow's `GITHUB_TOKEN` needs:
 
 - `pull-requests: write` — to read review threads and post the reminder comment.
-- `contents: read` — default checkout permission.
-
-`issues: write` is **not** required; PR comments are covered by `pull-requests: write`.
