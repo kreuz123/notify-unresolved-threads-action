@@ -29932,9 +29932,14 @@ function renderTemplate(template, values) {
 }
 
 function buildCommentBody(template, { reviewer, unresolvedCount, threadList }) {
-  const values = { reviewer, unresolvedCount, threadList };
+  const mentionsReviewer = template.includes('{reviewer}');
+  const values = {
+    reviewer: `@${reviewer}`,
+    unresolvedCount,
+    threadList
+  };
   const message = renderTemplate(template, values);
-  const mentionedMessage = `@${reviewer} ${message}`;
+  const mentionedMessage = mentionsReviewer ? message : `@${reviewer} ${message}`;
 
   if (template.includes('{threadList}')) {
     return mentionedMessage;

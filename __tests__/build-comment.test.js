@@ -40,7 +40,7 @@ describe('buildCommentBody', () => {
     expect(result.match(/View thread/g)).toHaveLength(1);
   });
 
-  test('appends the thread list automatically when the template omits {threadList}', () => {
+  test('renders {reviewer} as a mention and does not duplicate it', () => {
     const template = 'Please resolve your threads, {reviewer}.';
 
     const result = buildCommentBody(template, {
@@ -49,7 +49,8 @@ describe('buildCommentBody', () => {
       threadList: '1. [View thread](url)'
     });
 
-    expect(result).toContain('@octocat Please resolve your threads, octocat.');
+    expect(result).toContain('Please resolve your threads, @octocat.');
+    expect(result.match(/@octocat/g)).toHaveLength(1);
     expect(result).toContain('**Your unresolved review threads:**\n1. [View thread](url)');
   });
 
