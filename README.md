@@ -43,7 +43,13 @@ jobs:
 
 ### Configuring the wait time and customizing the comment
 
-Use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment. The template supports the placeholders `{reviewer}`, `{unresolvedCount}`, and `{threadList}`. `{reviewer}` always renders as an `@mention` so the reviewer is notified; if you omit it, the mention is prepended automatically. If `{threadList}` is omitted from your template, the thread list is appended automatically so it's never lost.
+Use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment.
+
+The template supports the following placeholders:
+
+- `{reviewer}` — always renders as an `@mention` so the reviewer is notified. If omitted from your template, the mention is prepended automatically.
+- `{unresolvedCount}` — the number of unresolved threads.
+- `{threadList}` — the list of unresolved threads. If omitted from your template, the thread list is appended automatically so it's never lost.
 
 ```yaml
       - uses: kreuz123/notify-unresolved-threads-action@v1
