@@ -18,7 +18,7 @@ describe('formatThreadList', () => {
     const result = formatThreadList(threads);
 
     expect(result).toContain('1. [View thread]');
-    expect(result).toContain('This is a comment that is longer than se...');
+    expect(result).toContain('This is a comment that is longer than seventy characters to test trunc...');
     expect(result).toContain('https://github.com/owner/repo/pull/1#discussion_r1');
   });
 
