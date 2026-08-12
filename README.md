@@ -83,7 +83,7 @@ Only override `token` if you need to use a Personal Access Token (PAT) or a GitH
 
 The workflow's `GITHUB_TOKEN` needs:
 
-- `pull-requests: write` — to post the reminder comment.
-- `contents: read` — **required**, not optional. The GraphQL `reviewThreads` field used to detect unresolved threads needs the token to also have `contents: read`, even though it never reads file contents. Without it, the query fails (visible as an error in the job log) and no reminder comment is posted, even when unresolved threads exist.
+- `pull-requests: write` — to read review threads and post the reminder comment.
+- `contents: read` — not required by this action's own logic; it neither checks out the repo nor reads file contents. It's included above as a conventional minimal-permission default and can typically be omitted.
 
 `issues: write` is **not** required; PR comments are covered by `pull-requests: write`.
