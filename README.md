@@ -53,13 +53,14 @@ jobs:
       - run: |
           echo "Reviewer: ${{ steps.notify.outputs.reviewer }}"
           echo "Unresolved count: ${{ steps.notify.outputs.unresolvedCount }}"
+          echo "Thread list: ${{ steps.notify.outputs.threadList }}"
 ```
 
 ## Inputs
 
 | Name          | Required | Default            | Description                              |
 | ------------- | -------- | ------------------- | ---------------------------------------- |
-| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. |
+| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. GitHub Actions provides this automatically, so you rarely need to pass it explicitly. |
 | `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
 
 ## Outputs
