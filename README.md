@@ -65,9 +65,11 @@ The template supports the following placeholders:
 
 | Name          | Required | Default            | Description                              |
 | ------------- | -------- | ------------------- | ---------------------------------------- |
-| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. GitHub Actions provides this automatically, so you rarely need to pass it explicitly. |
+| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. Defaults to the automatically provided token. |
 | `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
 | `comment-template` | No | See `action.yml` | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
+
+Only override `token` if you need to use a Personal Access Token (PAT) or a GitHub App token — for example, to trigger other workflows or to access resources beyond the default `GITHUB_TOKEN` permissions. In most cases you don't need to set it explicitly.
 
 ## Outputs
 
