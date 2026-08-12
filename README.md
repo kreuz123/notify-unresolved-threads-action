@@ -1,6 +1,6 @@
 # Notify Approver of Unresolved Threads
 
-A GitHub Action that notifies PR reviewers who approved with unresolved review threads, encouraging them to resolve their own conversations.
+A GitHub Action that reminds approving PR reviewers to resolve their unresolved threads, especially when rulesets require conversation resolution before merging.
 
 ## Features
 
@@ -14,7 +14,7 @@ A GitHub Action that notifies PR reviewers who approved with unresolved review t
 ## How it works
 
 1. Triggers when a PR review is **submitted**.
-2. Waits `wait-seconds` (GitHub needs a moment to register the review's thread state).
+2. Waits `wait-seconds` to give reviewers time to resolve threads after approving.
 3. Skips silently unless the review `state` is `approved`.
 4. Fetches all review threads (with pagination) and keeps the unresolved ones started by the approving reviewer.
 5. Posts a comment on the PR mentioning the reviewer, listing their unresolved threads.
@@ -43,7 +43,7 @@ jobs:
 
 ### Configuring the wait time and customizing the comment
 
-Use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment.
+Optionally, use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment.
 
 The template supports the following placeholders:
 
@@ -65,11 +65,9 @@ The template supports the following placeholders:
 
 | Name          | Required | Default            | Description                              |
 | ------------- | -------- | ------------------- | ---------------------------------------- |
-| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. Defaults to the automatically provided token. |
-| `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
+| `token`       | No       | `${{ github.token }}` | Token used to read threads and post the comment. Override only for a PAT or GitHub App token. |
+| `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, giving reviewers time to resolve threads after approving. |
 | `comment-template` | No | See `action.yml` | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
-
-Only override `token` if you need to use a Personal Access Token (PAT) or a GitHub App token — for example, to trigger other workflows or to access resources beyond the default `GITHUB_TOKEN` permissions. In most cases you don't need to set it explicitly.
 
 ## Outputs
 
@@ -84,6 +82,8 @@ Only override `token` if you need to use a Personal Access Token (PAT) or a GitH
 The workflow's `GITHUB_TOKEN` needs:
 
 - `pull-requests: write` — to read review threads and post the reminder comment.
-- `contents: read` — default checkout permission.
 
-`issues: write` is **not** required; PR comments are covered by `pull-requests: write`.
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
