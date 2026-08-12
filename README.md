@@ -8,6 +8,7 @@ A GitHub Action that notifies PR reviewers who approved with unresolved review t
 - ✅ Filters to show only threads started by the approver
 - ✅ Posts a friendly reminder comment with links to unresolved threads
 - ✅ Configurable wait time before checking threads
+- ✅ Customizable comment template with `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders
 - ✅ Handles pagination for PRs with many threads
 
 ## How it works
