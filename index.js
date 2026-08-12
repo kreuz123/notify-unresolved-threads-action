@@ -2,13 +2,15 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const { checkUnresolvedThreads } = require('./src/check-threads');
 const { formatThreadList } = require('./src/format-threads');
+const { buildCommentBody } = require('./src/build-comment');
 
 async function run() {
   try {
     // Get inputs
     const token = core.getInput('token');
     const waitSeconds = parseInt(core.getInput('wait-seconds'), 10);
-    
+    const commentTemplate = core.getInput('comment-template');
+
     // Wait as configured
     if (waitSeconds > 0) {
       core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
@@ -57,7 +59,11 @@ async function run() {
     core.setOutput('threadList', threadList);
 
     // Post comment
-    const commentBody = `@${reviewer} You have approved this PR, but you also started ${unresolvedThreads.length} unresolved review thread(s). Please resolve your own conversations. Thank you!\n\n**Your unresolved review threads:**\n${threadList}`;
+    const commentBody = buildCommentBody(commentTemplate, {
+      reviewer,
+      unresolvedCount: unresolvedThreads.length,
+      threadList
+    });
 
     await client.rest.issues.createComment({
       owner,

@@ -29922,6 +29922,37 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 2337:
+/***/ ((module) => {
+
+function renderTemplate(template, values) {
+  return template.replace(/\{(\w+)\}/g, (match, key) =>
+    Object.prototype.hasOwnProperty.call(values, key) ? String(values[key]) : match
+  );
+}
+
+function buildCommentBody(template, { reviewer, unresolvedCount, threadList }) {
+  const mentionsReviewer = template.includes('{reviewer}');
+  const values = {
+    reviewer: `@${reviewer}`,
+    unresolvedCount,
+    threadList
+  };
+  const message = renderTemplate(template, values);
+  const mentionedMessage = mentionsReviewer ? message : `@${reviewer} ${message}`;
+
+  if (template.includes('{threadList}')) {
+    return mentionedMessage;
+  }
+
+  return `${mentionedMessage}\n\n**Your unresolved review threads:**\n${threadList}`;
+}
+
+module.exports = { buildCommentBody };
+
+
+/***/ }),
+
 /***/ 4889:
 /***/ ((module) => {
 
@@ -31928,13 +31959,15 @@ const core = __nccwpck_require__(7484);
 const github = __nccwpck_require__(3228);
 const { checkUnresolvedThreads } = __nccwpck_require__(4889);
 const { formatThreadList } = __nccwpck_require__(8798);
+const { buildCommentBody } = __nccwpck_require__(2337);
 
 async function run() {
   try {
     // Get inputs
     const token = core.getInput('token');
     const waitSeconds = parseInt(core.getInput('wait-seconds'), 10);
-    
+    const commentTemplate = core.getInput('comment-template');
+
     // Wait as configured
     if (waitSeconds > 0) {
       core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
@@ -31983,7 +32016,11 @@ async function run() {
     core.setOutput('threadList', threadList);
 
     // Post comment
-    const commentBody = `@${reviewer} You have approved this PR, but you also started ${unresolvedThreads.length} unresolved review thread(s). Please resolve your own conversations. Thank you!\n\n**Your unresolved review threads:**\n${threadList}`;
+    const commentBody = buildCommentBody(commentTemplate, {
+      reviewer,
+      unresolvedCount: unresolvedThreads.length,
+      threadList
+    });
 
     await client.rest.issues.createComment({
       owner,
