@@ -10,6 +10,14 @@ A GitHub Action that notifies PR reviewers who approved with unresolved review t
 - ✅ Configurable wait time before checking threads
 - ✅ Handles pagination for PRs with many threads
 
+## How it works
+
+1. Triggers when a PR review is **submitted**.
+2. Waits `wait-seconds` (GitHub needs a moment to register the review's thread state).
+3. Skips silently unless the review `state` is `approved`.
+4. Fetches all review threads (with pagination) and keeps the unresolved ones started by the approving reviewer.
+5. Posts a comment on the PR mentioning the reviewer, listing their unresolved threads.
+
 ## Usage
 
 ### Basic Usage
@@ -21,13 +29,52 @@ on:
   pull_request_review:
     types: [submitted]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   notify:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: read
     steps:
       - uses: kreuz123/notify-unresolved-threads-action@v1
         with:
           token: ${{ github.token }}
+```
+
+### Using the outputs
+
+```yaml
+      - uses: kreuz123/notify-unresolved-threads-action@v1
+        id: notify
+        with:
+          token: ${{ github.token }}
+
+      - run: |
+          echo "Reviewer: ${{ steps.notify.outputs.reviewer }}"
+          echo "Unresolved count: ${{ steps.notify.outputs.unresolvedCount }}"
+```
+
+## Inputs
+
+| Name          | Required | Default            | Description                              |
+| ------------- | -------- | ------------------- | ---------------------------------------- |
+| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. |
+| `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
+
+## Outputs
+
+| Name              | Description                                             |
+| ----------------- | -------------------------------------------------------- |
+| `reviewer`        | Username of the reviewer who approved.                    |
+| `unresolvedCount` | Number of unresolved threads started by the reviewer.     |
+| `threadList`       | Markdown-formatted list of unresolved threads (empty when none). |
+
+## Required permissions
+
+The workflow's `GITHUB_TOKEN` needs:
+
+- `pull-requests: write` — to read review threads and post the reminder comment.
+- `contents: read` — default checkout permission.
+
+`issues: write` is **not** required; PR comments are covered by `pull-requests: write`.
