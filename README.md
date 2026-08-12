@@ -19,6 +19,12 @@ A GitHub Action that reminds approving PR reviewers to resolve their unresolved 
 4. Fetches all review threads (with pagination) and keeps the unresolved ones started by the approving reviewer.
 5. Posts a comment on the PR mentioning the reviewer, listing their unresolved threads.
 
+## Example reminder comment
+
+When a reviewer approves a pull request but still has unresolved review threads they started, the action posts a reminder like this:
+
+![Example unresolved-thread reminder comment](docs/images/example-reminder-comment.png)
+
 ## Usage
 
 ### Basic Usage
