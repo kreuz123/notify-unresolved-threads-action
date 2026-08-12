@@ -85,5 +85,3 @@ The workflow's `GITHUB_TOKEN` needs:
 
 - `pull-requests: write` — to read review threads and post the reminder comment.
 - `contents: read` — not required by this action's own logic; it neither checks out the repo nor reads file contents. It's included above as a conventional minimal-permission default and can typically be omitted.
-
-`issues: write` is **not** required; PR comments are covered by `pull-requests: write`.
