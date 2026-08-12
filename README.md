@@ -39,32 +39,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: kreuz123/notify-unresolved-threads-action@v1
-        with:
-          token: ${{ github.token }}
 ```
 
-### Using the outputs
+### Configuring the wait time and customizing the comment
 
-```yaml
-      - uses: kreuz123/notify-unresolved-threads-action@v1
-        id: notify
-        with:
-          token: ${{ github.token }}
-
-      - run: |
-          echo "Reviewer: ${{ steps.notify.outputs.reviewer }}"
-          echo "Unresolved count: ${{ steps.notify.outputs.unresolvedCount }}"
-          echo "Thread list: ${{ steps.notify.outputs.threadList }}"
-```
-
-### Customizing the comment
-
-Use `comment-template` to change the wording of the reminder comment. The template supports the placeholders `{reviewer}`, `{unresolvedCount}`, and `{threadList}`. `{reviewer}` always renders as an `@mention` so the reviewer is notified; if you omit it, the mention is prepended automatically. If `{threadList}` is omitted from your template, the thread list is appended automatically so it's never lost.
+Use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment. The template supports the placeholders `{reviewer}`, `{unresolvedCount}`, and `{threadList}`. `{reviewer}` always renders as an `@mention` so the reviewer is notified; if you omit it, the mention is prepended automatically. If `{threadList}` is omitted from your template, the thread list is appended automatically so it's never lost.
 
 ```yaml
       - uses: kreuz123/notify-unresolved-threads-action@v1
         with:
-          token: ${{ github.token }}
+          wait-seconds: 60
           comment-template: |
             Please resolve your {unresolvedCount} open conversation(s) before we can merge.
 
