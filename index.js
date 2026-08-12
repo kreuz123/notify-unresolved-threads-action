@@ -1,12 +1,11 @@
 const core = require('@actions/core');
+const github = require('@actions/github');
 const { checkUnresolvedThreads } = require('./src/check-threads');
 const { formatThreadList } = require('./src/format-threads');
 const { buildCommentBody } = require('./src/build-comment');
 
 async function run() {
   try {
-    const github = await import('@actions/github');
-
     // Get inputs
     const token = core.getInput('token');
     const waitSecondsInput = core.getInput('wait-seconds');
