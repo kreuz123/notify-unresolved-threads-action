@@ -1,14 +1,20 @@
 const core = require('@actions/core');
-const github = require('@actions/github');
 const { checkUnresolvedThreads } = require('./src/check-threads');
 const { formatThreadList } = require('./src/format-threads');
 const { buildCommentBody } = require('./src/build-comment');
 
 async function run() {
   try {
+    const github = await import('@actions/github');
+
     // Get inputs
     const token = core.getInput('token');
-    const waitSeconds = parseInt(core.getInput('wait-seconds'), 10);
+    const waitSecondsInput = core.getInput('wait-seconds');
+    const waitSeconds = Number(waitSecondsInput);
+
+    if (!/^\d+$/.test(waitSecondsInput) || !Number.isSafeInteger(waitSeconds)) {
+      throw new Error('Input "wait-seconds" must be a non-negative integer.');
+    }
     const commentTemplate = core.getInput('comment-template');
 
     // Wait as configured
