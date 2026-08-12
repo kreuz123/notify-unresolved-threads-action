@@ -14,6 +14,10 @@ inputs:
     description: 'Seconds to wait before checking threads'
     required: false
     default: '45'
+  comment-template:
+    description: 'Template for the reminder comment. Supports the placeholders {reviewer}, {unresolvedCount}, and {threadList}. If {threadList} is omitted, the thread list is appended automatically.'
+    required: false
+    default: 'You have approved this PR, but you also started {unresolvedCount} unresolved review thread(s). Please resolve your own conversations. Thank you!'
 
 outputs:
   reviewer:

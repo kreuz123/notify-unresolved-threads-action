@@ -56,12 +56,27 @@ jobs:
           echo "Thread list: ${{ steps.notify.outputs.threadList }}"
 ```
 
+### Customizing the comment
+
+Use `comment-template` to change the wording of the reminder comment. The template supports the placeholders `{reviewer}`, `{unresolvedCount}`, and `{threadList}`. If `{threadList}` is omitted from your template, the thread list is appended automatically so it's never lost.
+
+```yaml
+      - uses: kreuz123/notify-unresolved-threads-action@v1
+        with:
+          token: ${{ github.token }}
+          comment-template: |
+            Please resolve your {unresolvedCount} open conversation(s) before we can merge.
+
+            {threadList}
+```
+
 ## Inputs
 
 | Name          | Required | Default            | Description                              |
 | ------------- | -------- | ------------------- | ---------------------------------------- |
 | `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. GitHub Actions provides this automatically, so you rarely need to pass it explicitly. |
 | `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
+| `comment-template` | No | See `action.yml` | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. The comment always starts with `@{reviewer}`; if `{threadList}` isn't included, the thread list is appended automatically. |
 
 ## Outputs
 
