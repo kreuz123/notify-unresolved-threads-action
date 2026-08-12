@@ -39,32 +39,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: kreuz123/notify-unresolved-threads-action@v1
-        with:
-          token: ${{ github.token }}
 ```
 
-### Using the outputs
+### Configuring the wait time and customizing the comment
 
-```yaml
-      - uses: kreuz123/notify-unresolved-threads-action@v1
-        id: notify
-        with:
-          token: ${{ github.token }}
+Use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment.
 
-      - run: |
-          echo "Reviewer: ${{ steps.notify.outputs.reviewer }}"
-          echo "Unresolved count: ${{ steps.notify.outputs.unresolvedCount }}"
-          echo "Thread list: ${{ steps.notify.outputs.threadList }}"
-```
+The template supports the following placeholders:
 
-### Customizing the comment
-
-Use `comment-template` to change the wording of the reminder comment. The template supports the placeholders `{reviewer}`, `{unresolvedCount}`, and `{threadList}`. `{reviewer}` always renders as an `@mention` so the reviewer is notified; if you omit it, the mention is prepended automatically. If `{threadList}` is omitted from your template, the thread list is appended automatically so it's never lost.
+- `{reviewer}` — always renders as an `@mention` so the reviewer is notified. If omitted from your template, the mention is prepended automatically.
+- `{unresolvedCount}` — the number of unresolved threads.
+- `{threadList}` — the list of unresolved threads. If omitted from your template, the thread list is appended automatically so it's never lost.
 
 ```yaml
       - uses: kreuz123/notify-unresolved-threads-action@v1
         with:
-          token: ${{ github.token }}
+          wait-seconds: 60
           comment-template: |
             Please resolve your {unresolvedCount} open conversation(s) before we can merge.
 
@@ -75,9 +65,11 @@ Use `comment-template` to change the wording of the reminder comment. The templa
 
 | Name          | Required | Default            | Description                              |
 | ------------- | -------- | ------------------- | ---------------------------------------- |
-| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. GitHub Actions provides this automatically, so you rarely need to pass it explicitly. |
+| `token`       | No       | `${{ github.token }}` | GitHub token used to read threads and post the comment. Defaults to the automatically provided token. |
 | `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, to let GitHub finish registering thread state. |
 | `comment-template` | No | See `action.yml` | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
+
+Only override `token` if you need to use a Personal Access Token (PAT) or a GitHub App token — for example, to trigger other workflows or to access resources beyond the default `GITHUB_TOKEN` permissions. In most cases you don't need to set it explicitly.
 
 ## Outputs
 
