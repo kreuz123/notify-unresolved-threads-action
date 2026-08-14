@@ -35,6 +35,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/index.js
-          git commit -m "build: generate dist/index.js" || echo "No changes to commit"
+          git add dist/
+          git commit -m "build: generate distribution" || echo "No changes to commit"
           git push
