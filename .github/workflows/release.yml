@@ -36,7 +36,7 @@ jobs:
 
       - name: Check if distribution is up to date
         run: |
-          if git diff --exit-code dist/; then
+          if [ -z "$(git status --porcelain -- dist/)" ]; then
             echo "✓ Distribution is up to date"
           else
             echo "✗ Distribution is outdated. Run 'npm run build' and commit changes."
