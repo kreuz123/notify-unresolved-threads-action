@@ -17,20 +17,20 @@ async function run() {
 
     const commentTemplate = core.getInput("comment-template");
 
-    // Wait as configured
-    if (waitSeconds > 0) {
-      core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
-      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
-    }
-
     // Get context
     const context = github.context;
     const client = github.getOctokit(token);
 
-    // Check if this is an approved review
+    // Check if this is an approved review before waiting
     if (context.payload.review?.state !== "approved") {
       core.info("Review is not approved. Skipping thread check.");
       return;
+    }
+
+    // Wait as configured
+    if (waitSeconds > 0) {
+      core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
     }
 
     const reviewer = context.payload.review.user.login;
