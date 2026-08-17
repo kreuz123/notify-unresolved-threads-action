@@ -35,19 +35,19 @@ async function checkUnresolvedThreads(client, owner, repo, prNumber, reviewer) {
         owner,
         repo,
         number: prNumber,
-        after: endCursor
-      }
+        after: endCursor,
+      },
     );
 
     const threads = repository.pullRequest.reviewThreads.nodes;
     allThreads.push(...threads);
-    
+
     hasNextPage = repository.pullRequest.reviewThreads.pageInfo.hasNextPage;
     endCursor = repository.pullRequest.reviewThreads.pageInfo.endCursor;
   }
 
   // Filter: unresolved threads started by this reviewer
-  const unresolvedThreads = allThreads.filter(thread => {
+  const unresolvedThreads = allThreads.filter((thread) => {
     return (
       !thread.isResolved &&
       thread.comments.nodes.length > 0 &&

@@ -1,32 +1,32 @@
-name: 'Notify Approver of Unresolved Threads'
-description: 'Notifies PR reviewers who approved with unresolved review threads'
-author: 'kreuz123'
+name: "Notify Approver of Unresolved Threads"
+description: "Notifies PR reviewers who approved with unresolved review threads"
+author: "kreuz123"
 branding:
-  icon: 'alert-circle'
-  color: 'blue'
+  icon: "alert-circle"
+  color: "blue"
 
 inputs:
   token:
-    description: 'GitHub token for API access'
+    description: "GitHub token for API access"
     required: false
     default: ${{ github.token }}
   wait-seconds:
-    description: 'Seconds to wait before checking threads'
+    description: "Seconds to wait before checking threads"
     required: false
-    default: '45'
+    default: "45"
   comment-template:
-    description: 'Template for the reminder comment. Supports the placeholders {reviewer}, {unresolvedCount}, and {threadList}. If {threadList} is omitted, the thread list is appended automatically.'
+    description: "Template for the reminder comment. Supports the placeholders {reviewer}, {unresolvedCount}, and {threadList}. If {threadList} is omitted, the thread list is appended automatically."
     required: false
-    default: 'You have approved this PR, but you also started {unresolvedCount} unresolved review thread(s). Please resolve your own conversations. Thank you!'
+    default: "You have approved this PR, but you also started {unresolvedCount} unresolved review thread(s). Please resolve your own conversations. Thank you!"
 
 outputs:
   reviewer:
-    description: 'Username of the reviewer who approved'
+    description: "Username of the reviewer who approved"
   unresolvedCount:
-    description: 'Number of unresolved threads by reviewer'
+    description: "Number of unresolved threads by reviewer"
   threadList:
-    description: 'Formatted list of unresolved threads'
+    description: "Formatted list of unresolved threads"
 
 runs:
-  using: 'node24'
-  main: 'dist/index.js'
+  using: "node24"
+  main: "dist/index.js"
