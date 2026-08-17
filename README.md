@@ -58,13 +58,14 @@ The template supports the following placeholders:
 - `{threadList}` — the list of unresolved threads. If omitted from your template, the thread list is appended automatically so it's never lost.
 
 ```yaml
-- uses: kreuz123/notify-unresolved-threads-action@main
-  with:
-    wait-seconds: 60
-    comment-template: |
-      Please resolve your {unresolvedCount} open conversation(s) before we can merge.
+steps:
+  - uses: kreuz123/notify-unresolved-threads-action@main
+    with:
+      wait-seconds: 60
+      comment-template: |
+        Please resolve your {unresolvedCount} open conversation(s) before we can merge.
 
-      {threadList}
+        {threadList}
 ```
 
 ## Inputs
