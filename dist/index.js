@@ -31935,7 +31935,7 @@ function formatThreadList(threads) {
         0,
         PREVIEW_LENGTH,
       );
-      const isPreviewCut = preview.length >= PREVIEW_LENGTH;
+      const isPreviewCut = thread.comments.nodes[0].body.length > PREVIEW_LENGTH;
       const ellipsis = isPreviewCut ? "..." : "";
 
       return `${index + 1}. [View thread](${thread.comments.nodes[0].url}) - ${preview}${ellipsis}`;
