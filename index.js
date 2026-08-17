@@ -1,26 +1,26 @@
-const core = require('@actions/core');
-const github = require('@actions/github');
-const { checkUnresolvedThreads } = require('./src/check-threads');
-const { formatThreadList } = require('./src/format-threads');
-const { buildCommentBody } = require('./src/build-comment');
+const core = require("@actions/core");
+const github = require("@actions/github");
+const { checkUnresolvedThreads } = require("./src/check-threads");
+const { formatThreadList } = require("./src/format-threads");
+const { buildCommentBody } = require("./src/build-comment");
 
 async function run() {
   try {
     // Get inputs
-    const token = core.getInput('token');
-    const waitSecondsInput = core.getInput('wait-seconds').trim();
+    const token = core.getInput("token");
+    const waitSecondsInput = core.getInput("wait-seconds").trim();
     const waitSeconds = Number(waitSecondsInput);
 
     if (!/^\d+$/.test(waitSecondsInput) || !Number.isSafeInteger(waitSeconds)) {
       throw new Error('Input "wait-seconds" must be a non-negative integer.');
     }
-    
-    const commentTemplate = core.getInput('comment-template');
+
+    const commentTemplate = core.getInput("comment-template");
 
     // Wait as configured
     if (waitSeconds > 0) {
       core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
-      await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
     }
 
     // Get context
@@ -28,8 +28,8 @@ async function run() {
     const client = github.getOctokit(token);
 
     // Check if this is an approved review
-    if (context.payload.review?.state !== 'approved') {
-      core.info('Review is not approved. Skipping thread check.');
+    if (context.payload.review?.state !== "approved") {
+      core.info("Review is not approved. Skipping thread check.");
       return;
     }
 
@@ -45,14 +45,14 @@ async function run() {
       owner,
       repo,
       prNumber,
-      reviewer
+      reviewer,
     );
 
     if (unresolvedThreads.length === 0) {
-      core.info('No unresolved threads found.');
-      core.setOutput('reviewer', reviewer);
-      core.setOutput('unresolvedCount', '0');
-      core.setOutput('threadList', '');
+      core.info("No unresolved threads found.");
+      core.setOutput("reviewer", reviewer);
+      core.setOutput("unresolvedCount", "0");
+      core.setOutput("threadList", "");
       return;
     }
 
@@ -60,25 +60,27 @@ async function run() {
     const threadList = formatThreadList(unresolvedThreads);
 
     // Set outputs
-    core.setOutput('reviewer', reviewer);
-    core.setOutput('unresolvedCount', unresolvedThreads.length.toString());
-    core.setOutput('threadList', threadList);
+    core.setOutput("reviewer", reviewer);
+    core.setOutput("unresolvedCount", unresolvedThreads.length.toString());
+    core.setOutput("threadList", threadList);
 
     // Post comment
     const commentBody = buildCommentBody(commentTemplate, {
       reviewer,
       unresolvedCount: unresolvedThreads.length,
-      threadList
+      threadList,
     });
 
     await client.rest.issues.createComment({
       owner,
       repo,
       issue_number: prNumber,
-      body: commentBody
+      body: commentBody,
     });
 
-    core.info(`Comment posted successfully. Notified ${reviewer} of ${unresolvedThreads.length} unresolved thread(s).`);
+    core.info(
+      `Comment posted successfully. Notified ${reviewer} of ${unresolvedThreads.length} unresolved thread(s).`,
+    );
   } catch (error) {
     core.setFailed(`Action failed: ${error.message}`);
   }

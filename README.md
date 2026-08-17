@@ -58,30 +58,30 @@ The template supports the following placeholders:
 - `{threadList}` — the list of unresolved threads. If omitted from your template, the thread list is appended automatically so it's never lost.
 
 ```yaml
-      - uses: kreuz123/notify-unresolved-threads-action@main
-        with:
-          wait-seconds: 60
-          comment-template: |
-            Please resolve your {unresolvedCount} open conversation(s) before we can merge.
+- uses: kreuz123/notify-unresolved-threads-action@main
+  with:
+    wait-seconds: 60
+    comment-template: |
+      Please resolve your {unresolvedCount} open conversation(s) before we can merge.
 
-            {threadList}
+      {threadList}
 ```
 
 ## Inputs
 
-| Name          | Required | Default            | Description                              |
-| ------------- | -------- | ------------------- | ---------------------------------------- |
-| `token`       | No       | `${{ github.token }}` | Token used to read threads and post the comment. Override only for a PAT or GitHub App token. |
-| `wait-seconds` | No      | `45`                 | Seconds to wait before checking threads, giving reviewers time to resolve threads after approving. |
-| `comment-template` | No | See `action.yml` | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
+| Name               | Required | Default               | Description                                                                                                                                                                                                                                                                                    |
+| ------------------ | -------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `token`            | No       | `${{ github.token }}` | Token used to read threads and post the comment. Override only for a PAT or GitHub App token.                                                                                                                                                                                                  |
+| `wait-seconds`     | No       | `45`                  | Seconds to wait before checking threads, giving reviewers time to resolve threads after approving.                                                                                                                                                                                             |
+| `comment-template` | No       | See `action.yml`      | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
 
 ## Outputs
 
-| Name              | Description                                             |
-| ----------------- | -------------------------------------------------------- |
-| `reviewer`        | Username of the reviewer who approved.                    |
-| `unresolvedCount` | Number of unresolved threads started by the reviewer.     |
-| `threadList`       | Markdown-formatted list of unresolved threads (empty when none). |
+| Name              | Description                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| `reviewer`        | Username of the reviewer who approved.                           |
+| `unresolvedCount` | Number of unresolved threads started by the reviewer.            |
+| `threadList`      | Markdown-formatted list of unresolved threads (empty when none). |
 
 ## Required permissions
 
@@ -92,4 +92,3 @@ The workflow's `GITHUB_TOKEN` needs:
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
