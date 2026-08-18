@@ -90,6 +90,7 @@ describe("index action review state re-check", () => {
     expect(mockCore.info).not.toHaveBeenCalledWith(
       "Reviewer's latest review state is no longer approved. Skipping thread check.",
     );
+    expect(mockCore.setFailed).not.toHaveBeenCalled();
   });
 
   test("skips thread check when latest submitted review is not approved", async () => {
@@ -120,5 +121,6 @@ describe("index action review state re-check", () => {
     expect(mockCore.info).toHaveBeenCalledWith(
       "Reviewer's latest review state is no longer approved. Skipping thread check.",
     );
+    expect(mockCore.setFailed).not.toHaveBeenCalled();
   });
 });
