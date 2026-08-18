@@ -1,27 +1,26 @@
 # Notify Approver of Unresolved Threads
 
-A GitHub Action that reminds approving PR reviewers to resolve their unresolved threads, especially when rulesets require conversation resolution before merging.
+A GitHub Action that reminds reviewers to resolve their open review threads after approving a pull request, especially when branch rules require all conversations to be resolved before merging.
 
 ## Features
 
-- ✅ Automatically checks for unresolved threads after a review is approved
-- ✅ Filters to show only threads started by the approver
-- ✅ Posts a friendly reminder comment with links to unresolved threads
-- ✅ Configurable wait time before checking threads
-- ✅ Customizable comment template
-- ✅ Handles pagination for PRs with many threads
+- ✅ Checks for unresolved review threads started by the approving reviewer
+- ✅ Posts a reminder comment with links to those threads
+- ✅ Supports configurable wait times and comment templates
+- ✅ Handles pagination for reviews and threads
 
 ## How it works
 
 1. Triggers when a PR review is **submitted**.
-2. Waits `wait-seconds` to give reviewers time to resolve threads after approving.
-3. Skips silently unless the review `state` is `approved`.
-4. Fetches all review threads (with pagination) and keeps the unresolved ones started by the approving reviewer.
-5. Posts a comment on the PR mentioning the reviewer, listing their unresolved threads.
+2. Skips immediately unless the submitted review is `approved`.
+3. Waits `wait-seconds` after an approved review is submitted.
+4. Re-fetches the reviewer's reviews with pagination and skips if their latest submitted review is no longer `APPROVED`.
+5. Fetches all review threads with pagination and keeps unresolved threads started by the approving reviewer.
+6. Posts a comment only when unresolved threads are found.
 
 ## Example reminder comment
 
-When a reviewer approves a pull request but still has unresolved review threads they started, the action posts a reminder like this:
+The action posts a reminder when an approving reviewer has unresolved threads they started:
 
 ![Example unresolved-thread reminder comment](docs/images/example-reminder-comment.png)
 
@@ -49,9 +48,9 @@ jobs:
 
 ### Configuring the wait time and customizing the comment
 
-Optionally, use `wait-seconds` to control how long the action waits before checking threads, and `comment-template` to change the wording of the reminder comment.
+Use `wait-seconds` to control how long the action waits before checking threads. The default is `45` seconds; set it to `0` to check immediately.
 
-The template supports the following placeholders:
+Use `comment-template` to customize the reminder comment. The template supports the following placeholders:
 
 - `{reviewer}` — always renders as an `@mention` so the reviewer is notified. If omitted from your template, the mention is prepended automatically.
 - `{unresolvedCount}` — the number of unresolved threads.
@@ -70,17 +69,17 @@ steps:
 
 ## Inputs
 
-| Name               | Required | Default               | Description                                                                                                                                                                                                                                                                                    |
-| ------------------ | -------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `token`            | No       | `${{ github.token }}` | Token used to read threads and post the comment. Override only for a PAT or GitHub App token.                                                                                                                                                                                                  |
-| `wait-seconds`     | No       | `45`                  | Seconds to wait before checking threads, giving reviewers time to resolve threads after approving.                                                                                                                                                                                             |
-| `comment-template` | No       | See `action.yml`      | Template for the reminder comment. Supports `{reviewer}`, `{unresolvedCount}`, and `{threadList}` placeholders. `{reviewer}` always renders as an `@mention`; if omitted, the mention is prepended automatically. If `{threadList}` isn't included, the thread list is appended automatically. |
+| Name               | Required | Default               | Description                                                                                                                               |
+| ------------------ | -------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `token`            | No       | `${{ github.token }}` | Token used to read threads and post the comment. Override only for a PAT or GitHub App token.                                             |
+| `wait-seconds`     | No       | `45`                  | Seconds to wait before checking threads. Set to `0` to check immediately.                                                                  |
+| `comment-template` | No       | See `action.yml`      | Template for the reminder comment using `{reviewer}`, `{unresolvedCount}`, and `{threadList}`.                                           |
 
 ## Outputs
 
 | Name              | Description                                                      |
 | ----------------- | ---------------------------------------------------------------- |
-| `reviewer`        | Username of the reviewer who approved.                           |
+| `reviewer`        | Username of the reviewer who approved.                          |
 | `unresolvedCount` | Number of unresolved threads started by the reviewer.            |
 | `threadList`      | Markdown-formatted list of unresolved threads (empty when none). |
 

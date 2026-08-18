@@ -3,6 +3,7 @@ const github = require("@actions/github");
 const { checkUnresolvedThreads } = require("./src/check-threads");
 const { formatThreadList } = require("./src/format-threads");
 const { buildCommentBody } = require("./src/build-comment");
+const { getLatestSubmittedReview } = require("./src/reviews");
 
 async function run() {
   try {
@@ -17,25 +18,40 @@ async function run() {
 
     const commentTemplate = core.getInput("comment-template");
 
+    // Get context
+    const context = github.context;
+    const client = github.getOctokit(token);
+
+    // Check if this is an approved review before waiting
+    if (context.payload.review?.state !== "approved") {
+      core.info("Review is not approved. Skipping thread check.");
+      return;
+    }
+
     // Wait as configured
     if (waitSeconds > 0) {
       core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
       await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
     }
 
-    // Get context
-    const context = github.context;
-    const client = github.getOctokit(token);
-
-    // Check if this is an approved review
-    if (context.payload.review?.state !== "approved") {
-      core.info("Review is not approved. Skipping thread check.");
-      return;
-    }
-
     const reviewer = context.payload.review.user.login;
     const { owner, repo } = context.repo;
     const prNumber = context.payload.pull_request.number;
+
+    // Re-fetch the reviewer's current state after the wait, in case it changed
+    const reviews = await client.paginate(client.rest.pulls.listReviews, {
+      owner,
+      repo,
+      pull_number: prNumber,
+      per_page: 100,
+    });
+    const latestReview = getLatestSubmittedReview(reviews, reviewer);
+    if (latestReview?.state !== "APPROVED") {
+      core.info(
+        "Reviewer's latest review state is no longer approved. Skipping thread check.",
+      );
+      return;
+    }
 
     core.info(`Checking unresolved threads for reviewer: ${reviewer}`);
 
@@ -86,4 +102,8 @@ async function run() {
   }
 }
 
-run();
+module.exports = { run };
+
+if (require.main === module) {
+  run();
+}
