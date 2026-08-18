@@ -37099,6 +37099,22 @@ async function run() {
     const { owner, repo } = context.repo;
     const prNumber = context.payload.pull_request.number;
 
+    // Re-fetch the reviewer's current state after the wait, in case it changed
+    const { data: reviews } = await client.rest.pulls.listReviews({
+      owner,
+      repo,
+      pull_number: prNumber,
+    });
+    const latestReview = reviews
+      .filter((r) => r.user.login === reviewer)
+      .pop();
+    if (latestReview?.state !== "APPROVED") {
+      core.info(
+        "Reviewer's latest review state is no longer approved. Skipping thread check.",
+      );
+      return;
+    }
+
     core.info(`Checking unresolved threads for reviewer: ${reviewer}`);
 
     // Fetch and check threads
