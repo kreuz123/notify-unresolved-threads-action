@@ -78,7 +78,9 @@ describe("index action review state re-check", () => {
     await flushPromises();
     await flushPromises();
 
-    expect(client.paginate).toHaveBeenCalledWith(client.rest.pulls.listReviews, {
+    expect(client.paginate).toHaveBeenCalledTimes(1);
+    expect(client.paginate.mock.calls[0][0]).toBe(client.rest.pulls.listReviews);
+    expect(client.paginate.mock.calls[0][1]).toEqual({
       owner: "owner",
       repo: "repo",
       pull_number: 123,
