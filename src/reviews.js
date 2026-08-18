@@ -1,13 +1,10 @@
 function getLatestSubmittedReview(reviews, reviewer) {
-  return reviews
-    .filter(
-      (review) =>
-        review.user.login === reviewer &&
-        review.state !== "PENDING" &&
-        review.submitted_at,
-    )
-    .sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at))
-    .pop();
+  return (reviews ?? []).reduce((latest, review) => {
+    if (review?.user?.login !== reviewer) return latest;
+    if (review.state === "PENDING" || !review.submitted_at) return latest;
+
+    return !latest || review.submitted_at > latest.submitted_at ? review : latest;
+  }, undefined);
 }
 
 module.exports = { getLatestSubmittedReview };
