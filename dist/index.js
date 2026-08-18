@@ -37104,9 +37104,11 @@ async function run() {
       owner,
       repo,
       pull_number: prNumber,
+      per_page: 100,
     });
     const latestReview = reviews
       .filter((r) => r.user.login === reviewer)
+      .sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at))
       .pop();
     if (latestReview?.state !== "APPROVED") {
       core.info(
