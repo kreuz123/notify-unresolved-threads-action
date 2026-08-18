@@ -3,6 +3,7 @@ const github = require("@actions/github");
 const { checkUnresolvedThreads } = require("./src/check-threads");
 const { formatThreadList } = require("./src/format-threads");
 const { buildCommentBody } = require("./src/build-comment");
+const { getLatestSubmittedReview } = require("./src/reviews");
 
 async function run() {
   try {
@@ -38,16 +39,13 @@ async function run() {
     const prNumber = context.payload.pull_request.number;
 
     // Re-fetch the reviewer's current state after the wait, in case it changed
-    const { data: reviews } = await client.rest.pulls.listReviews({
+    const reviews = await client.paginate(client.rest.pulls.listReviews, {
       owner,
       repo,
       pull_number: prNumber,
       per_page: 100,
     });
-    const latestReview = reviews
-      .filter((r) => r.user.login === reviewer)
-      .sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at))
-      .pop();
+    const latestReview = getLatestSubmittedReview(reviews, reviewer);
     if (latestReview?.state !== "APPROVED") {
       core.info(
         "Reviewer's latest review state is no longer approved. Skipping thread check.",
@@ -104,4 +102,8 @@ async function run() {
   }
 }
 
-run();
+module.exports = { run };
+
+if (require.main === module) {
+  run();
+}

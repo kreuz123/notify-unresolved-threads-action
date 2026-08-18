@@ -1,6 +1,122 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 6136:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const core = __nccwpck_require__(7484);
+const github = __nccwpck_require__(3228);
+const { checkUnresolvedThreads } = __nccwpck_require__(4889);
+const { formatThreadList } = __nccwpck_require__(8798);
+const { buildCommentBody } = __nccwpck_require__(2337);
+const { getLatestSubmittedReview } = __nccwpck_require__(7144);
+
+async function run() {
+  try {
+    // Get inputs
+    const token = core.getInput("token");
+    const waitSecondsInput = core.getInput("wait-seconds").trim();
+    const waitSeconds = Number(waitSecondsInput);
+
+    if (!/^\d+$/.test(waitSecondsInput) || !Number.isSafeInteger(waitSeconds)) {
+      throw new Error('Input "wait-seconds" must be a non-negative integer.');
+    }
+
+    const commentTemplate = core.getInput("comment-template");
+
+    // Get context
+    const context = github.context;
+    const client = github.getOctokit(token);
+
+    // Check if this is an approved review before waiting
+    if (context.payload.review?.state !== "approved") {
+      core.info("Review is not approved. Skipping thread check.");
+      return;
+    }
+
+    // Wait as configured
+    if (waitSeconds > 0) {
+      core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
+      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
+    }
+
+    const reviewer = context.payload.review.user.login;
+    const { owner, repo } = context.repo;
+    const prNumber = context.payload.pull_request.number;
+
+    // Re-fetch the reviewer's current state after the wait, in case it changed
+    const reviews = await client.paginate(client.rest.pulls.listReviews, {
+      owner,
+      repo,
+      pull_number: prNumber,
+      per_page: 100,
+    });
+    const latestReview = getLatestSubmittedReview(reviews, reviewer);
+    if (latestReview?.state !== "APPROVED") {
+      core.info(
+        "Reviewer's latest review state is no longer approved. Skipping thread check.",
+      );
+      return;
+    }
+
+    core.info(`Checking unresolved threads for reviewer: ${reviewer}`);
+
+    // Fetch and check threads
+    const unresolvedThreads = await checkUnresolvedThreads(
+      client,
+      owner,
+      repo,
+      prNumber,
+      reviewer,
+    );
+
+    if (unresolvedThreads.length === 0) {
+      core.info("No unresolved threads found.");
+      core.setOutput("reviewer", reviewer);
+      core.setOutput("unresolvedCount", "0");
+      core.setOutput("threadList", "");
+      return;
+    }
+
+    // Format output
+    const threadList = formatThreadList(unresolvedThreads);
+
+    // Set outputs
+    core.setOutput("reviewer", reviewer);
+    core.setOutput("unresolvedCount", unresolvedThreads.length.toString());
+    core.setOutput("threadList", threadList);
+
+    // Post comment
+    const commentBody = buildCommentBody(commentTemplate, {
+      reviewer,
+      unresolvedCount: unresolvedThreads.length,
+      threadList,
+    });
+
+    await client.rest.issues.createComment({
+      owner,
+      repo,
+      issue_number: prNumber,
+      body: commentBody,
+    });
+
+    core.info(
+      `Comment posted successfully. Notified ${reviewer} of ${unresolvedThreads.length} unresolved thread(s).`,
+    );
+  } catch (error) {
+    core.setFailed(`Action failed: ${error.message}`);
+  }
+}
+
+module.exports = { run };
+
+if (require.main === require.cache[eval('__filename')]) {
+  run();
+}
+
+
+/***/ }),
+
 /***/ 4914:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -31948,6 +32064,26 @@ module.exports = { formatThreadList };
 
 /***/ }),
 
+/***/ 7144:
+/***/ ((module) => {
+
+function getLatestSubmittedReview(reviews, reviewer) {
+  return reviews
+    .filter(
+      (review) =>
+        review.user.login === reviewer &&
+        review.state !== "PENDING" &&
+        review.submitted_at,
+    )
+    .sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at))
+    .pop();
+}
+
+module.exports = { getLatestSubmittedReview };
+
+
+/***/ }),
+
 /***/ 2613:
 /***/ ((module) => {
 
@@ -37059,115 +37195,12 @@ legacyRestEndpointMethods.VERSION = VERSION;
 /******/ 	})();
 /******/ 	
 /************************************************************************/
-var __webpack_exports__ = {};
-const core = __nccwpck_require__(7484);
-const github = __nccwpck_require__(3228);
-const { checkUnresolvedThreads } = __nccwpck_require__(4889);
-const { formatThreadList } = __nccwpck_require__(8798);
-const { buildCommentBody } = __nccwpck_require__(2337);
-
-async function run() {
-  try {
-    // Get inputs
-    const token = core.getInput("token");
-    const waitSecondsInput = core.getInput("wait-seconds").trim();
-    const waitSeconds = Number(waitSecondsInput);
-
-    if (!/^\d+$/.test(waitSecondsInput) || !Number.isSafeInteger(waitSeconds)) {
-      throw new Error('Input "wait-seconds" must be a non-negative integer.');
-    }
-
-    const commentTemplate = core.getInput("comment-template");
-
-    // Get context
-    const context = github.context;
-    const client = github.getOctokit(token);
-
-    // Check if this is an approved review before waiting
-    if (context.payload.review?.state !== "approved") {
-      core.info("Review is not approved. Skipping thread check.");
-      return;
-    }
-
-    // Wait as configured
-    if (waitSeconds > 0) {
-      core.info(`Waiting ${waitSeconds} seconds before checking threads...`);
-      await new Promise((resolve) => setTimeout(resolve, waitSeconds * 1000));
-    }
-
-    const reviewer = context.payload.review.user.login;
-    const { owner, repo } = context.repo;
-    const prNumber = context.payload.pull_request.number;
-
-    // Re-fetch the reviewer's current state after the wait, in case it changed
-    const { data: reviews } = await client.rest.pulls.listReviews({
-      owner,
-      repo,
-      pull_number: prNumber,
-      per_page: 100,
-    });
-    const latestReview = reviews
-      .filter((r) => r.user.login === reviewer)
-      .sort((a, b) => new Date(a.submitted_at) - new Date(b.submitted_at))
-      .pop();
-    if (latestReview?.state !== "APPROVED") {
-      core.info(
-        "Reviewer's latest review state is no longer approved. Skipping thread check.",
-      );
-      return;
-    }
-
-    core.info(`Checking unresolved threads for reviewer: ${reviewer}`);
-
-    // Fetch and check threads
-    const unresolvedThreads = await checkUnresolvedThreads(
-      client,
-      owner,
-      repo,
-      prNumber,
-      reviewer,
-    );
-
-    if (unresolvedThreads.length === 0) {
-      core.info("No unresolved threads found.");
-      core.setOutput("reviewer", reviewer);
-      core.setOutput("unresolvedCount", "0");
-      core.setOutput("threadList", "");
-      return;
-    }
-
-    // Format output
-    const threadList = formatThreadList(unresolvedThreads);
-
-    // Set outputs
-    core.setOutput("reviewer", reviewer);
-    core.setOutput("unresolvedCount", unresolvedThreads.length.toString());
-    core.setOutput("threadList", threadList);
-
-    // Post comment
-    const commentBody = buildCommentBody(commentTemplate, {
-      reviewer,
-      unresolvedCount: unresolvedThreads.length,
-      threadList,
-    });
-
-    await client.rest.issues.createComment({
-      owner,
-      repo,
-      issue_number: prNumber,
-      body: commentBody,
-    });
-
-    core.info(
-      `Comment posted successfully. Notified ${reviewer} of ${unresolvedThreads.length} unresolved thread(s).`,
-    );
-  } catch (error) {
-    core.setFailed(`Action failed: ${error.message}`);
-  }
-}
-
-run();
-
-module.exports = __webpack_exports__;
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module is referenced by other modules so it can't be inlined
+/******/ 	var __webpack_exports__ = __nccwpck_require__(6136);
+/******/ 	module.exports = __webpack_exports__;
+/******/ 	
 /******/ })()
 ;
